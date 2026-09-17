@@ -22,8 +22,8 @@ Scramjet (frontend rewrite) + BareMux + libcurl + Wisp (`wisp-js/server`) 内蔵
 1. Render Dashboard → **New + → Web Service** → リポジトリ選択
 2. 設定:
    - Runtime: `Node`
-   - Build Command: `npm install --ignore-scripts`
-   - Start Command: `npm start`
+   - Build Command: `npm install --ignore-scripts && bash scripts/install-wireproxy.sh`
+   - Start Command: `bash scripts/start.sh`
    - Health Check Path: `/health`
    - Plan: `Free`
 3. **Deploy** → URLで開く
@@ -47,6 +47,30 @@ Scramjet (frontend rewrite) + BareMux + libcurl + Wisp (`wisp-js/server`) 内蔵
 | `DNS_SERVERS` | - | `1.1.1.3,1.0.0.3` | Wisp用DNS |
 | `BLOCKED_HOSTNAMES` | - | `example.com` | カンマ区切りブロックリスト |
 | `WISP_URL` | - | 空 (same-origin) | Vercel等にフロントだけ置く時に `https://xxx.onrender.com/wisp/` を指定 |
+| `UPSTREAM_SOCKS` | - | 空 (直結) | `socks5://127.0.0.1:25344` を指定するとWisp上流TCPをSOCKS経由に。`start.sh` がWG設定時に自動設定 |
+| `TUNNEL_BYPASS` | - | プライベート/ループバック | SOCKSを迂回するCIDR・ホスト (カンマ区切り) |
+| `WISP_DNS_PASSTHROUGH` | - | `1` | トンネル時にRender側DNSを使わずホスト名をSOCKS内で解決 |
+
+## wireproxy導入 (住宅IP経由のegress)
+
+RenderのデータセンターIPだとYouTube (`googlevideo.com` 403) 等に弾かれるため、
+自宅・VPS等のWireGuardピア経由で外に出る構成に対応しています。
+仕組み: `wireproxy` (root不要のuserspace WGクライアント) がSOCKS5 (`127.0.0.1:25344`) を開き、
+NodeがWisp上流TCPをすべてそこへ流します (`src/socks-tunnel.mjs`)。
+
+1. WireGuardの設定を用意 (自宅ルーター/VPS/商用WGなど。`[Interface]` の秘密鍵と `[Peer]` が必要)
+2. Render Dashboard → Environment に設定 (値はすべて秘密扱い):
+   - `WG_PRIVATE_KEY`, `WG_ADDRESS` (例: `10.200.200.2/32`)
+   - `WG_PEER_PUBLIC_KEY`, `WG_PEER_ENDPOINT` (例: `203.0.113.10:51820`)
+   - 任意: `WG_ALLOWED_IPS` (既定 `0.0.0.0/0`), `WG_PRESHARED_KEY`, `WG_DNS`
+   - 任意: `SOCKS_USERNAME` / `SOCKS_PASSWORD`
+3. 再デプロイ → `GET /health` の `egress.mode` が `wireguard` になれば成功
+4. `WG_PRIVATE_KEY` 未設定なら従来通り直結で動きます (デプロイは壊れません)
+
+注意:
+- TCPのみ対応 (wireproxyのSOCKS5にUDPがないため。WispのUDPは従来通り無効)
+- トンネル時はDNSもWG側で解決されます (Render DNSへの漏洩なし)
+- Freeプランのスリープ・帯域制限はそのままです
 
 ## Vercelにフロントだけ置きたい場合 (上級)
 
@@ -69,7 +93,12 @@ npm start
 .
 ├── render.yaml        # Render Blueprint (Import→Deployの本体)
 ├── package.json       # npm / Node18+ / startのみ
-├── src/index.js       # Fastify + Wisp + 静的配信 + /health + /config.js
+├── scripts/
+│   ├── install-wireproxy.sh  # wireproxy取得 (build時)
+│   └── start.sh              # WG設定→wireproxy起動→node起動
+├── src/
+│   ├── index.js       # Fastify + Wisp + 静的配信 + /health + /config.js
+│   └── socks-tunnel.mjs  # Wisp上流TCPをSOCKS5経由化 (wireproxy用)
 └── public/
     ├── index.html     # UI
     ├── index.js       # ScramjetController + BareMux + libcurl

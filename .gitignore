@@ -3,3 +3,10 @@ npm-debug.log*
 dist/
 .env
 .DS_Store
+# wireproxy (downloaded at build; generated at runtime; secrets!)
+bin/
+wireproxy.log
+.wg0.local.conf
+.wireproxy.local.conf
+wg0.conf
+wireproxy.conf

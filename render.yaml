@@ -8,8 +8,8 @@ services:
     branch: main
     # IMPORTANT: @mercuryworkshop/scramjet has `preinstall: only-allow pnpm`,
     # so we install with --ignore-scripts to work with Render's default npm.
-    buildCommand: npm install --ignore-scripts
-    startCommand: npm start
+    buildCommand: npm install --ignore-scripts && bash scripts/install-wireproxy.sh
+    startCommand: bash scripts/start.sh
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
@@ -20,7 +20,31 @@ services:
         value: 1.1.1.3,1.0.0.3
       - key: BLOCKED_HOSTNAMES
         value: example.com
+      - key: WIREPROXY_VERSION
+        value: v1.1.3
+      - key: SOCKS_ADDR
+        value: 127.0.0.1:25344
+      - key: WG_ALLOWED_IPS
+        value: 0.0.0.0/0
       # Same-origin Wisp by default. Only set this if you serve the
       # frontend elsewhere (e.g. Vercel static) and want it to point here:
       # - key: WISP_URL
       #   value: https://YOUR-SERVICE.onrender.com/wisp/
+      # --- WireGuard (wireproxy) secrets: fill in the Render Dashboard ---
+      # Unset WG_PRIVATE_KEY = direct egress (current behavior).
+      - key: WG_PRIVATE_KEY
+        sync: false
+      - key: WG_ADDRESS
+        sync: false
+      - key: WG_PEER_PUBLIC_KEY
+        sync: false
+      - key: WG_PEER_ENDPOINT
+        sync: false
+      - key: WG_PRESHARED_KEY
+        sync: false
+      - key: WG_DNS
+        sync: false
+      - key: SOCKS_USERNAME
+        sync: false
+      - key: SOCKS_PASSWORD
+        sync: false

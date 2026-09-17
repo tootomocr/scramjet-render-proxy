@@ -1,0 +1,26 @@
+# Render Blueprint: GitHub -> "New + -> Blueprint" or repo "Import -> Deploy" only.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: scramjet-wisp-proxy
+    runtime: node
+    plan: free
+    branch: main
+    # IMPORTANT: @mercuryworkshop/scramjet has `preinstall: only-allow pnpm`,
+    # so we install with --ignore-scripts to work with Render's default npm.
+    buildCommand: npm install --ignore-scripts
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Render injects PORT automatically. Do not hardcode.
+      - key: DNS_SERVERS
+        value: 1.1.1.3,1.0.0.3
+      - key: BLOCKED_HOSTNAMES
+        value: example.com
+      # Same-origin Wisp by default. Only set this if you serve the
+      # frontend elsewhere (e.g. Vercel static) and want it to point here:
+      # - key: WISP_URL
+      #   value: https://YOUR-SERVICE.onrender.com/wisp/

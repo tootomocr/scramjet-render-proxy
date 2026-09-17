@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scramjet Proxy</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰</text></svg>" />
+    <script src="/scram/scramjet.all.js"></script>
+    <script src="/baremux/index.js"></script>
+    <link rel="stylesheet" href="index.css" />
+    <script src="/config.js"></script>
+    <script src="register-sw.js" defer></script>
+    <script src="search.js" defer></script>
+    <script src="index.js" defer></script>
+  </head>
+  <body>
+    <div class="flex-center logo-wrapper header-center">
+      <h1>Scramjet Proxy</h1>
+    </div>
+    <div class="flex-center desc">
+      <p>URLを入力して開く。タブはこのページ内に埋め込まれます。</p>
+    </div>
+    <form id="sj-form" class="flex-center">
+      <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
+      <input id="sj-address" type="text" placeholder="URL または検索ワード" autocomplete="off" />
+      <button type="submit">Go</button>
+    </form>
+    <div class="desc">
+      <p id="sj-error"></p>
+      <pre id="sj-error-code"></pre>
+    </div>
+    <footer>
+      <div>
+        <a href="https://github.com/MercuryWorkshop/scramjet">Scramjet</a>
+        <a href="https://github.com/MercuryWorkshop/wisp-js">Wisp</a>
+        <span id="wisp-status">wisp: checking…</span>
+      </div>
+    </footer>
+  </body>
+</html>

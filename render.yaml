@@ -17,7 +17,9 @@ services:
         value: production
       # Render injects PORT automatically. Do not hardcode.
       - key: DNS_SERVERS
-        value: 1.1.1.3,1.0.0.3
+        value: 1.1.1.1,1.0.0.1
+      - key: ALLOW_UDP
+        value: "1"
       - key: BLOCKED_HOSTNAMES
         value: example.com
       # Same-origin Wisp by default. Only set this if you serve the

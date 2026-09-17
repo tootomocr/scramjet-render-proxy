@@ -1,9 +1,10 @@
 "use strict";
-/* Frontend controller: Scramjet + BareMux + libcurl -> Wisp */
+/* Frontend controller: Scramjet + BareMux + epoxy/libcurl -> Wisp */
 
 const form = document.getElementById("sj-form");
 const address = document.getElementById("sj-address");
 const searchEngine = document.getElementById("sj-search-engine");
+const transportSelect = document.getElementById("sj-transport");
 const error = document.getElementById("sj-error");
 const errorCode = document.getElementById("sj-error-code");
 const wispStatus = document.getElementById("wisp-status");
@@ -45,14 +46,34 @@ async function main() {
     }
 
     const url = search(address.value, searchEngine.value);
+    const want = (transportSelect && transportSelect.value) || "epoxy";
 
-    try {
-      if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
-        await connection.setTransport("/libcurl/index.mjs", [{ websocket: wispUrl }]);
+    // Chrome -> Epoxy first (YouTube/อย่างไร video streaming needs it).
+    // Firefox -> Libcurl first. Fall back to the other on failure.
+    const attempts =
+      want === "epoxy"
+        ? [
+            ["/epoxy/index.mjs", [{ wisp: wispUrl }]],
+            ["/libcurl/index.mjs", [{ websocket: wispUrl }]],
+          ]
+        : [
+            ["/libcurl/index.mjs", [{ websocket: wispUrl }]],
+            ["/epoxy/index.mjs", [{ wisp: wispUrl }]],
+          ];
+
+    let lastErr = null;
+    for (const [mod, args] of attempts) {
+      try {
+        await connection.setTransport(mod, args);
+        lastErr = null;
+        break;
+      } catch (err) {
+        lastErr = err;
       }
-    } catch (err) {
-      error.textContent = "Wisp への接続設定に失敗しました。";
-      errorCode.textContent = String(err && err.stack || err) + "\nWISP=" + wispUrl;
+    }
+    if (lastErr) {
+      error.textContent = "Wisp への接続設定に失敗しました。transportを切り替えて再試行してください。";
+      errorCode.textContent = String(lastErr && lastErr.stack || lastErr) + "\nWISP=" + wispUrl;
       return;
     }
 

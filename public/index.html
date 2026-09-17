@@ -23,6 +23,10 @@
     <form id="sj-form" class="flex-center">
       <input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" />
       <input id="sj-address" type="text" placeholder="URL または検索ワード" autocomplete="off" />
+      <select id="sj-transport" title="transport">
+        <option value="epoxy" selected>Epoxy (Chrome推奨・YouTube向け)</option>
+        <option value="libcurl">Libcurl (Firefox向け)</option>
+      </select>
       <button type="submit">Go</button>
     </form>
     <div class="desc">

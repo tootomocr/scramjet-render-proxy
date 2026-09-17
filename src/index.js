@@ -7,7 +7,6 @@ import fastifyStatic from "@fastify/static";
 
 import { scramjetPath } from "@mercuryworkshop/scramjet/path";
 import { libcurlPath } from "@mercuryworkshop/libcurl-transport";
-import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
 import { baremuxPath } from "@mercuryworkshop/bare-mux/node";
 
 const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
@@ -15,13 +14,10 @@ const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
 // ---- Env ----
 const PORT = Number.parseInt(process.env.PORT || "10000", 10) || 10000;
 const HOST = process.env.HOST || "0.0.0.0";
-const DNS_SERVERS = (process.env.DNS_SERVERS || "1.1.1.1,1.0.0.1")
+const DNS_SERVERS = (process.env.DNS_SERVERS || "1.1.1.3,1.0.0.3")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
-// YouTube (googlevideo.com / QUIC) needs UDP over Wisp. libcurl-only + UDP-off
-// causes video playback to stall/crash with STATUS_BREAKPOINT.
-const ALLOW_UDP = (process.env.ALLOW_UDP || "1") !== "0";
 // Public Wisp URL injected into frontend (for Vercel-static mode).
 // Empty = same-origin /wisp/ (normal Render mode).
 const PUBLIC_WISP_URL = (process.env.WISP_URL || "").trim();
@@ -33,7 +29,7 @@ const BLOCKED = (process.env.BLOCKED_HOSTNAMES || "example.com")
 // ---- Wisp ----
 logging.set_level(logging.NONE);
 Object.assign(wisp.options, {
-  allow_udp_streams: ALLOW_UDP,
+  allow_udp_streams: false,
   dns_servers: DNS_SERVERS,
   hostname_blacklist: BLOCKED.map((h) => new RegExp(h.replace(/\./g, "\\."))),
 });
@@ -83,12 +79,6 @@ fastify.register(fastifyStatic, {
 fastify.register(fastifyStatic, {
   root: libcurlPath,
   prefix: "/libcurl/",
-  decorateReply: false,
-});
-
-fastify.register(fastifyStatic, {
-  root: epoxyPath,
-  prefix: "/epoxy/",
   decorateReply: false,
 });
 

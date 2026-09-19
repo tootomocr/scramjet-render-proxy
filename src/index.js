@@ -15,7 +15,7 @@ const publicPath = fileURLToPath(new URL("../public/", import.meta.url));
 // ---- Env ----
 const PORT = Number.parseInt(process.env.PORT || "10000", 10) || 10000;
 const HOST = process.env.HOST || "0.0.0.0";
-const DNS_SERVERS = (process.env.DNS_SERVERS || "1.1.1.3,1.0.0.3")
+const DNS_SERVERS = (process.env.DNS_SERVERS || "1.1.1.1,1.0.0.1")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);

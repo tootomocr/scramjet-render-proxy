@@ -44,7 +44,7 @@ Scramjet (frontend rewrite) + BareMux + libcurl + Wisp (`wisp-js/server`) 内蔵
 |---|---|---|---|
 | `PORT` | Renderが注入 | `10000` | Renderは自動設定。触らない |
 | `HOST` | - | `0.0.0.0` | Renderは `0.0.0.0` 必須 |
-| `DNS_SERVERS` | - | `1.1.1.3,1.0.0.3` | Wisp用DNS |
+| `DNS_SERVERS` | - | `1.1.1.1,1.0.0.1` | Wisp用DNS (フィルタなし。1.1.1.3系はアダルト等を遮断するため不使用) |
 | `BLOCKED_HOSTNAMES` | - | `example.com` | カンマ区切りブロックリスト |
 | `WISP_URL` | - | 空 (same-origin) | Vercel等にフロントだけ置く時に `https://xxx.onrender.com/wisp/` を指定 |
 | `UPSTREAM_SOCKS` | - | 空 (直結) | `socks5://127.0.0.1:25344` を指定するとWisp上流TCPをSOCKS経由に。`start.sh` がWG設定時に自動設定 |
